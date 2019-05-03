@@ -2,6 +2,7 @@
 
 namespace Drupal\multiversion;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -39,6 +40,13 @@ class MultiversionMigration implements MultiversionMigrationInterface {
   protected $moduleInstaller;
 
   /**
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $connection;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, EntityTypeManagerInterface $entity_type_manager) {
@@ -46,7 +54,8 @@ class MultiversionMigration implements MultiversionMigrationInterface {
       $entity_type_manager,
       $container->get('entity.definition_update_manager'),
       $container->get('module_handler'),
-      $container->get('module_installer')
+      $container->get('module_installer'),
+      $container->get('database')
     );
   }
 
@@ -57,13 +66,14 @@ class MultiversionMigration implements MultiversionMigrationInterface {
    * @param \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $update_manager
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
+   * @param \Drupal\Core\Database\Connection $connection
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDefinitionUpdateManagerInterface $update_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDefinitionUpdateManagerInterface $update_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Connection $connection) {
     $this->entityTypeManager = $entity_type_manager;
     $this->updateManager = $update_manager;
     $this->moduleHandler = $module_handler;
     $this->moduleInstaller = $module_installer;
-    
+    $this->connection = $connection;
   }
 
   /**
@@ -113,28 +123,6 @@ class MultiversionMigration implements MultiversionMigrationInterface {
 
   /**
    * {@inheritdoc}
-   */
-  public function copyFilesToMigrateDirectory(FileStorageInterface $storage) {
-    foreach ($storage->loadMultiple() as $entity) {
-      $uri = $entity->getFileUri();
-
-      $target = file_uri_target($uri);
-
-      if ($target !== FALSE) {
-        $destination = 'migrate://' . $target;
-
-        if (multiversion_prepare_file_destination($destination)) {
-          // Copy the file to a folder from 'migrate://' directory.
-          file_unmanaged_copy($uri, $destination, FILE_EXISTS_REPLACE);
-        }
-      }
-    }
-
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
    *
    * Usage example:
    * @code
@@ -150,6 +138,11 @@ class MultiversionMigration implements MultiversionMigrationInterface {
   public function emptyOldStorage(EntityStorageInterface $storage) {
     if ($storage instanceof ContentEntityStorageInterface) {
       $storage->truncate();
+    }
+    elseif ($storage instanceof FileStorageInterface) {
+      // Do not delete file entity from the storage as it deletes physical
+      // file - just truncate file managed database table.
+      $this->connection->truncate('file_managed')->execute();
     }
     else {
       $entities = $storage->loadMultiple();
