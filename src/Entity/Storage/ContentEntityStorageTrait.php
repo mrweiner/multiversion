@@ -512,49 +512,8 @@ trait ContentEntityStorageTrait {
   /**
    * {@inheritdoc}
    */
-  public function resetCache(array $ids = NULL) {
-    parent::resetCache($ids);
-    $ws = $this->getWorkspaceId();
-    if ($this->entityType->isStaticallyCacheable() && isset($ids)) {
-      foreach ($ids as $id) {
-        unset($this->entities[$ws][$id]);
-      }
-    }
-    else {
-      $this->entities[$ws] = [];
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getFromStaticCache(array $ids) {
-    $ws = $this->getWorkspaceId();
-    $entities = [];
-    // Load any available entities from the internal cache.
-    if ($this->entityType->isStaticallyCacheable() && !empty($this->entities[$ws])) {
-      $entities += array_intersect_key($this->entities[$ws], array_flip($ids));
-    }
-    return $entities;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setStaticCache(array $entities) {
-    if ($this->entityType->isStaticallyCacheable()) {
-      $ws = $this->getWorkspaceId();
-      if (!isset($this->entities[$ws])) {
-        $this->entities[$ws] = [];
-      }
-      $this->entities[$ws] += $entities;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function buildCacheId($id) {
+    // Add the Workspace ID to the static cache key.
     $ws = $this->getWorkspaceId();
     return "values:{$this->entityTypeId}:$id:$ws";
   }
