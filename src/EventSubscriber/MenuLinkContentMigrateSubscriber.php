@@ -46,6 +46,8 @@ class MenuLinkContentMigrateSubscriber implements EventSubscriberInterface {
   public function onPostMigrateLinks(MultiversionManagerEvent $event) {
     if ($event->getOp() === MultiversionManager::OP_DISABLE && $entity_type = $event->getEntityType('menu_link_content')) {
       $data_table = $entity_type->getDataTable();
+      // Truncate 'menu_tree' table before rebuild.
+      $this->connection->truncate('menu_tree')->execute();
       // Set a rediscover and rebuild menu_tree table.
       // @see \Drupal\menu_link_content\Plugin\Deriver\MenuLinkContentDeriver
       $this->connection->update($data_table)
