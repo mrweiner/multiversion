@@ -514,6 +514,13 @@ trait ContentEntityStorageTrait {
    */
   public function resetCache(array $ids = NULL) {
     parent::resetCache($ids);
+
+    // Drupal 8.7.0 uses a memory cache bin for the static cache, so we don't
+    // need to do anything else.
+    if (version_compare(\Drupal::VERSION, '8.7', '>')) {
+      return;
+    }
+
     $ws = $this->getWorkspaceId();
     if ($this->entityType->isStaticallyCacheable() && isset($ids)) {
       foreach ($ids as $id) {
@@ -529,12 +536,18 @@ trait ContentEntityStorageTrait {
    * {@inheritdoc}
    */
   protected function getFromStaticCache(array $ids) {
-    $ws = $this->getWorkspaceId();
-    $entities = [];
-    // Load any available entities from the internal cache.
-    if ($this->entityType->isStaticallyCacheable() && !empty($this->entities[$ws])) {
-      $entities += array_intersect_key($this->entities[$ws], array_flip($ids));
+    if (version_compare(\Drupal::VERSION, '8.7', '>')) {
+      $entities = parent::getFromStaticCache($ids);
     }
+    else {
+      $ws = $this->getWorkspaceId();
+      $entities = [];
+      // Load any available entities from the internal cache.
+      if ($this->entityType->isStaticallyCacheable() && !empty($this->entities[$ws])) {
+        $entities += array_intersect_key($this->entities[$ws], array_flip($ids));
+      }
+    }
+
     return $entities;
   }
 
@@ -542,12 +555,17 @@ trait ContentEntityStorageTrait {
    * {@inheritdoc}
    */
   protected function setStaticCache(array $entities) {
-    if ($this->entityType->isStaticallyCacheable()) {
-      $ws = $this->getWorkspaceId();
-      if (!isset($this->entities[$ws])) {
-        $this->entities[$ws] = [];
+    if (version_compare(\Drupal::VERSION, '8.7', '>')) {
+      parent::setStaticCache($entities);
+    }
+    else {
+      if ($this->entityType->isStaticallyCacheable()) {
+        $ws = $this->getWorkspaceId();
+        if (!isset($this->entities[$ws])) {
+          $this->entities[$ws] = [];
+        }
+        $this->entities[$ws] += $entities;
       }
-      $this->entities[$ws] += $entities;
     }
   }
 
