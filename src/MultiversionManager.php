@@ -291,7 +291,7 @@ class MultiversionManager implements MultiversionManagerInterface, ContainerAwar
     }
 
     self::enableMigrationIsActive(array_keys($entity_types));
-    $migration->applyNewStorage();
+    $migration->applyNewStorage(array_keys($entity_types));
 
     // Definitions will now be updated. So fetch the new ones.
     if ($entity_types_to_enable !== NULL) {
@@ -413,7 +413,7 @@ class MultiversionManager implements MultiversionManagerInterface, ContainerAwar
       ->save();
 
     self::disableMigrationIsActive(array_keys($entity_types));
-    $migration->applyNewStorage();
+    $migration->applyNewStorage(array_keys($entity_types));
 
     // Temporarily disable the maintenance of the {comment_entity_statistics} table.
     $this->state->set('comment.maintain_entity_statistics', FALSE);

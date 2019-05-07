@@ -4,7 +4,6 @@ namespace Drupal\multiversion;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -18,16 +17,6 @@ use Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class MultiversionMigration implements MultiversionMigrationInterface {
-
-  /**
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * @var \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface
-   */
-  protected $updateManager;
 
   /**
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -51,8 +40,6 @@ class MultiversionMigration implements MultiversionMigrationInterface {
    */
   public static function create(ContainerInterface $container, EntityTypeManagerInterface $entity_type_manager) {
     return new static(
-      $entity_type_manager,
-      $container->get('entity.definition_update_manager'),
       $container->get('module_handler'),
       $container->get('module_installer'),
       $container->get('database')
@@ -62,15 +49,11 @@ class MultiversionMigration implements MultiversionMigrationInterface {
   /**
    * Constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   * @param \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $update_manager
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
    * @param \Drupal\Core\Database\Connection $connection
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDefinitionUpdateManagerInterface $update_manager, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Connection $connection) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->updateManager = $update_manager;
+  public function __construct(ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, Connection $connection) {
     $this->moduleHandler = $module_handler;
     $this->moduleInstaller = $module_installer;
     $this->connection = $connection;
@@ -154,11 +137,20 @@ class MultiversionMigration implements MultiversionMigrationInterface {
   /**
    * {@inheritdoc}
    */
-  public function applyNewStorage() {
-    // The first call is for making entity types revisionable, the second call
-    // is for adding required fields.
-    $this->updateManager->applyUpdates();
-    $this->updateManager->applyUpdates();
+  public function applyNewStorage(array $entity_type_ids) {
+    if (version_compare(\Drupal::VERSION, '8.7', '<')) {
+      // The first call is for making entity types revisionable, the second call
+      // is for adding required fields.
+      \Drupal::entityDefinitionUpdateManager()->applyUpdates();
+      \Drupal::entityDefinitionUpdateManager()->applyUpdates();
+    }
+    else {
+      foreach ($entity_type_ids as $entity_type_id) {
+        $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+        $field_storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($entity_type_id);
+        \Drupal::entityDefinitionUpdateManager()->updateFieldableEntityType($entity_type, $field_storage_definitions);
+      }
+    }
     return $this;
   }
 

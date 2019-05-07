@@ -197,7 +197,7 @@ function multiversion_update_8004() {
       }
 
       // Apply new updates.
-      $migration->applyNewStorage();
+      $migration->applyNewStorage(['user']);
       // Migrate content from the temporary storage to the new storage.
       $field_map = $migration->getFieldMap($entity_type, MultiversionManager::OP_DISABLE, MultiversionManager::FROM_TMP);
       $migration->migrateContentFromTemp($entity_type, $field_map);

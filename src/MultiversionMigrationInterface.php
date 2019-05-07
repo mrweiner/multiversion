@@ -38,9 +38,14 @@ interface MultiversionMigrationInterface {
   public function emptyOldStorage(EntityStorageInterface $storage);
 
   /**
-   * @return \Drupal\multiversion\MultiversionMigrationInterface
+   * Converts the entity storage to revisionable for the given entity type IDs.
+   *
+   * @param array $entity_type_ids
+   *   An array of entity types for which to convert the storage.
+   *
+   * @return $this
    */
-  public function applyNewStorage();
+  public function applyNewStorage(array $entity_type_ids);
 
   /**
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
