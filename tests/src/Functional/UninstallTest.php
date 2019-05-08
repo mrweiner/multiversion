@@ -1,18 +1,21 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface;
-use Drupal\simpletest\WebTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Test the UninstallTest class.
  *
  * @group multiversion
  */
-class UninstallTest extends WebTestBase {
+class UninstallTest extends BrowserTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $strictConfigSchema = FALSE;
 
   /**
@@ -47,7 +50,7 @@ class UninstallTest extends WebTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'multiversion',
     'key_value',
     'serialization',
@@ -72,6 +75,9 @@ class UninstallTest extends WebTestBase {
     $this->drupalLogin($this->rootUser);
   }
 
+  /**
+   * Tests uninstalling the module when there is existing content.
+   */
   public function testDisableWithExistingContent() {
     $entity_type_manager = $this->container->get('entity_type.manager');
     foreach ($this->entityTypes as $entity_type_id => $values) {
@@ -94,13 +100,8 @@ class UninstallTest extends WebTestBase {
     // Uninstall Multiversion.
     $this->container->get('module_installer')->uninstall(['multiversion']);
 
-    /** @var \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $update_manager */
-    $update_manager = \Drupal::entityDefinitionUpdateManager();
-    // The field class for the UUID field that Multiversion provides will now
-    // be gone. So we need to apply updates.
-    $update_manager->applyUpdates();
     // Check that applying updates worked.
-    $this->assertFalse($update_manager->needsUpdates(), 'There are not new updates to apply.');
+    $this->assertFalse(\Drupal::entityDefinitionUpdateManager()->needsUpdates(), 'There are no new updates to apply.');
 
     $ids_after = [];
     // Now check that the previously created entities still exist, have the
@@ -111,7 +112,7 @@ class UninstallTest extends WebTestBase {
       $this->assertFalse(is_subclass_of($storage_class, ContentEntityStorageInterface::class), "$entity_type_id got the correct storage handler assigned.");
       $this->assertTrue($storage->getQuery() instanceof QueryInterface, "$entity_type_id got the correct query handler assigned.");
       $ids_after[$entity_type_id] = $storage->getQuery()->execute();
-      $this->assertEqual($count_before[$entity_type_id], count($ids_after[$entity_type_id]), "All ${entity_type_id}s were migrated.");
+      $this->assertCount($count_before[$entity_type_id], $ids_after[$entity_type_id], "All ${entity_type_id}s were migrated.");
     }
   }
 

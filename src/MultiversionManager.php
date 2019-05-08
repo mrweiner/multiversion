@@ -285,10 +285,6 @@ class MultiversionManager implements MultiversionManagerInterface, ContainerAwar
     // the same result otherwise. Very strange.
     \Drupal::entityTypeManager()->clearCachedDefinitions();
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
-    foreach ($entity_types as $entity_type_id => $entity_type) {
-      $cid = "entity_base_field_definitions:$entity_type_id:" . $this->languageManager->getCurrentLanguage()->getId();
-      $this->cache->invalidate($cid);
-    }
 
     self::enableMigrationIsActive(array_keys($entity_types));
     $migration->applyNewStorage(array_keys($entity_types));
@@ -382,7 +378,7 @@ class MultiversionManager implements MultiversionManagerInterface, ContainerAwar
       $this->entityTypeManager->clearCachedDefinitions();
       $update_manager = \Drupal::entityDefinitionUpdateManager();
       foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
-        if ($entity_type->isSubclassOf(FieldableEntityInterface::CLASS)) {
+        if ($entity_type->entityClassImplements(FieldableEntityInterface::class)) {
           $entity_type_id = $entity_type->id();
           $revision_key = $entity_type->getKey('revision');
           /** @var \Drupal\Core\Entity\FieldableEntityStorageInterface $storage */
@@ -411,6 +407,9 @@ class MultiversionManager implements MultiversionManagerInterface, ContainerAwar
       ->getEditable('multiversion.settings')
       ->set('enabled_entity_types', $enabled_entity_types)
       ->save();
+
+    \Drupal::entityTypeManager()->clearCachedDefinitions();
+    \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
 
     self::disableMigrationIsActive(array_keys($entity_types));
     $migration->applyNewStorage(array_keys($entity_types));

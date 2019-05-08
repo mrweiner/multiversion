@@ -34,9 +34,12 @@ function multiversion_requirements($phase) {
 function multiversion_install() {
   // Create default workspace.
   Workspace::create(['machine_name' => 'live', 'label' => 'Live', 'type' => 'basic'])->save();
+
   /** @var \Drupal\multiversion\MultiversionManagerInterface $manager */
   $manager = \Drupal::getContainer()->get('multiversion.manager');
   $manager->enableEntityTypes();
+
+  _multiversion_update_uuid_fields();
 
   _multiversion_add_workspace_field_in_url_alias_table(TRUE);
 }
@@ -47,12 +50,40 @@ function multiversion_install() {
 function multiversion_uninstall() {
   \Drupal::state()->delete('multiversion_enabled');
 
+  // When the module is being uninstalled, we need to signal
+  // multiversion_field_info_alter() not to alter the field type classes
+  // anymore, so we ca properly update UUID fields.
+  \Drupal::state()->set('multiversion_uninstalling', TRUE);
+  _multiversion_update_uuid_fields();
+  \Drupal::state()->delete('multiversion_uninstalling');
+
   $database = \Drupal::database();
   $schema = $database->schema();
   $table = 'url_alias';
   $field = 'workspace';
   if ($schema->fieldExists($table, $field)) {
     $schema->dropField($table, $field);
+  }
+}
+
+/**
+ * Updates the field type class for UUID fields when the module is un/installed.
+ */
+function _multiversion_update_uuid_fields() {
+  \Drupal::service('plugin.manager.field.field_type')->clearCachedDefinitions();
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  $field_map = \Drupal::service('entity_field.manager')->getFieldMap();
+  foreach ($field_map as $entity_type_id => $entity_type_field_map) {
+    foreach ($entity_type_field_map as $field_name => $field_info) {
+      if ($field_info['type'] === 'uuid') {
+        $original_storage_definition = $entity_definition_update_manager->getFieldStorageDefinition($field_name, $entity_type_id);
+        if ($original_storage_definition instanceof BaseFieldDefinition) {
+          $field_storage_definition = BaseFieldDefinition::createFromFieldStorageDefinition($original_storage_definition);
+          $entity_definition_update_manager->updateFieldStorageDefinition($field_storage_definition);
+        }
+      }
+    }
   }
 }
 
