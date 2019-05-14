@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\multiversion\Tests\Views;
+namespace Drupal\Tests\multiversion\Functional\Views;
 
-use Drupal\views\Tests\ViewTestBase;
+use Drupal\Tests\views\Functional\ViewTestBase;
 use Drupal\views\Tests\ViewTestData;
 
 /**

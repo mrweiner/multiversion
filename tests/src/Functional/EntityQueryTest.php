@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 /**
  * Test the altered entity query functionality.
  *
  * @group multiversion
  */
-class EntityQueryTest extends MultiversionWebTestBase {
+class EntityQueryTest extends MultiversionFunctionalTestBase {
 
   /**
    * The entity types to test.
@@ -38,7 +38,7 @@ class EntityQueryTest extends MultiversionWebTestBase {
       'filename' => 'multiversion.txt',
       'uri' => 'public://multiversion.txt',
       'filemime' => 'text/plain',
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => 1,
     ],
     'shortcut' => [
       'shortcut_set' => 'default',
@@ -56,7 +56,7 @@ class EntityQueryTest extends MultiversionWebTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  protected function setUp() {
     parent::setUp();
     $this->factory = \Drupal::service('entity.query');
   }

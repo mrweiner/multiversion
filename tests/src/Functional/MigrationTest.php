@@ -1,17 +1,17 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\multiversion\Entity\Query\QueryInterface;
 use Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface;
-use Drupal\simpletest\WebTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Test the MigrationTest class.
  *
  * @group multiversion
  */
-class MigrationTest extends WebTestBase {
+class MigrationTest extends BrowserTestBase {
 
   protected $strictConfigSchema = FALSE;
 
@@ -44,14 +44,14 @@ class MigrationTest extends WebTestBase {
     'file' => [
       'uid' => 1,
       'filemime' => 'text/plain',
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => 1,
     ],
   ];
 
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'entity_test',
     'node',
     'comment',

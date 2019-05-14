@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests\Views;
+namespace Drupal\Tests\multiversion\Functional\Views;
 
 use Drupal\multiversion\Entity\Workspace;
 

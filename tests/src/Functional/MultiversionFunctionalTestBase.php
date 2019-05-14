@@ -1,14 +1,14 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\comment\Tests\CommentTestTrait;
-use Drupal\simpletest\WebTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Defines a base class for testing the Multiversion module.
  */
-abstract class MultiversionWebTestBase extends WebTestBase {
+abstract class MultiversionFunctionalTestBase extends BrowserTestBase {
 
   use CommentTestTrait;
 
@@ -57,7 +57,7 @@ abstract class MultiversionWebTestBase extends WebTestBase {
    */
   protected $entityDefinitionUpdateManager;
 
-  public static $modules = [
+  protected static $modules = [
     'entity_test',
     'multiversion',
     'node',

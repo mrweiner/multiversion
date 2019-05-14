@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 /**
  * Test the methods on the ConflictTracker class.
  *
  * @group multiversion
  */
-class ConflictTrackerTest extends MultiversionWebTestBase {
+class ConflictTrackerTest extends MultiversionFunctionalTestBase {
 
   /**
    * @var \Drupal\multiversion\Workspace\ConflictTracker;

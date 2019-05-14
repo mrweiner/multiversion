@@ -1,17 +1,15 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
-
-use Drupal\simpletest;
+namespace Drupal\Tests\multiversion\Functional;
 
 /**
  * Test the Integration of LCA library with multiversion module.
  *
  * @group multiversion
  */
-class ComplexLcaResolverTest extends MultiversionWebTestBase {
+class ComplexLcaResolverTest extends MultiversionFunctionalTestBase {
 
-  public static $modules = ['entity_test', 'key_value', 'multiversion', 'conflict'];
+  protected static $modules = ['entity_test', 'key_value', 'multiversion', 'conflict'];
 
   /**
    * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface

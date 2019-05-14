@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\entity_test\Entity\EntityTest;
 
@@ -9,7 +9,7 @@ use Drupal\entity_test\Entity\EntityTest;
  *
  * @group multiversion
  */
-class UuidIndexTest extends MultiversionWebTestBase {
+class UuidIndexTest extends MultiversionFunctionalTestBase {
 
   public function testMethods() {
     $entity = EntityTest::create();

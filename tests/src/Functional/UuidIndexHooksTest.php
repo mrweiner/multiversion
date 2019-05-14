@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 /**
  * Test the hooks invoking the UuidIndex class.
  *
  * @group multiversion
  */
-class UuidIndexHooksTest extends MultiversionWebTestBase {
+class UuidIndexHooksTest extends MultiversionFunctionalTestBase {
 
   public function testEntityHooks() {
     $keys = $this->uuidIndex->get('foo');

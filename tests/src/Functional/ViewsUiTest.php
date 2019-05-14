@@ -13,7 +13,7 @@ class ViewsUiTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'key_value',
     'multiversion',
     'serialization',

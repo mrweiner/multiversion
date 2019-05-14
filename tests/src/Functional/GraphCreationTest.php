@@ -1,15 +1,15 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 /**
  * Test the getGraph method from the RevisionTreeIndex class.
  *
  * @group multiversion
  */
-class GraphCreationTest extends MultiversionWebTestBase {
+class GraphCreationTest extends MultiversionFunctionalTestBase {
 
-  public static $modules = ['entity_test', 'key_value', 'multiversion'];
+  protected static $modules = ['entity_test', 'key_value', 'multiversion'];
 
   /**
    * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\entity_test\Entity\EntityTestRev;
 
@@ -9,7 +9,7 @@ use Drupal\entity_test\Entity\EntityTestRev;
  *
  * @group multiversion
  */
-class SequenceIndexTest extends MultiversionWebTestBase {
+class SequenceIndexTest extends MultiversionFunctionalTestBase {
 
   /**
    * @var \Drupal\multiversion\Entity\Index\SequenceIndexInterface

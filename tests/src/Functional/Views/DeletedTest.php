@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests\Views;
+namespace Drupal\Tests\multiversion\Functional\Views;
 
 /**
  * Tests the _deleted field handler.

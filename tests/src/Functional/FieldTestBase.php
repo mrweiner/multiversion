@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
-abstract class FieldTestBase extends MultiversionWebTestBase {
+abstract class FieldTestBase extends MultiversionFunctionalTestBase {
 
   /**
    * The entity types to test.
@@ -48,7 +48,7 @@ abstract class FieldTestBase extends MultiversionWebTestBase {
       'filename' => 'druplicon.txt',
       'uri' => 'public://druplicon.txt',
       'filemime' => 'text/plain',
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => 1,
     ],
   ];
 
@@ -80,7 +80,7 @@ abstract class FieldTestBase extends MultiversionWebTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  protected function setUp() {
     parent::setUp();
 
     file_put_contents($this->entityTypes['file']['uri'], 'Hello world!');

@@ -17,7 +17,7 @@ class PathAliasTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['system', 'path', 'multiversion', 'key_value', 'serialization', 'user', 'node'];
+  protected static $modules = ['system', 'path', 'multiversion', 'key_value', 'serialization', 'user', 'node'];
 
   /**
    * {@inheritdoc}

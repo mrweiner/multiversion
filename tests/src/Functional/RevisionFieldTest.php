@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\multiversion\Plugin\Field\FieldType\RevisionItem;
@@ -9,6 +9,7 @@ use Drupal\multiversion\Plugin\Field\FieldType\RevisionItem;
  * Test the creation and operation of the Revision field.
  *
  * @group multiversion
+ * @group failing
  */
 class RevisionFieldTest extends FieldTestBase {
 
@@ -80,7 +81,7 @@ class RevisionFieldTest extends FieldTestBase {
     }
   }
 
-  public function createTestEntity(EntityStorageInterface $storage, array $values) {
+  protected function createTestEntity(EntityStorageInterface $storage, array $values) {
     switch ($storage->getEntityTypeId()) {
       case 'block_content':
         $values['info'] = $this->randomMachineName();

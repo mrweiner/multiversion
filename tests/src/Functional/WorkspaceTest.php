@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\multiversion\Entity\Workspace;
 use Drupal\multiversion\Entity\WorkspaceInterface;
@@ -10,11 +10,11 @@ use Drupal\multiversion\Entity\WorkspaceInterface;
  *
  * @group multiversion
  */
-class WorkspaceTest extends MultiversionWebTestBase {
+class WorkspaceTest extends MultiversionFunctionalTestBase {
 
   protected $strictConfigSchema = FALSE;
 
-  public static $modules = ['multiversion', 'key_value'];
+  protected static $modules = ['multiversion', 'key_value'];
 
   public function testOperations() {
     $default = Workspace::load(1);

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\comment\Entity\Comment;
 use Drupal\node\Entity\Node;
@@ -10,7 +10,7 @@ use Drupal\node\Entity\Node;
  *
  * @group multiversion
  */
-class CommentStatisticsTest extends MultiversionWebTestBase {
+class CommentStatisticsTest extends MultiversionFunctionalTestBase {
 
   /**
    * The profile to install as a basis for testing.
@@ -24,7 +24,7 @@ class CommentStatisticsTest extends MultiversionWebTestBase {
    *
    * @var array
    */
-  public static $modules = ['multiversion', 'comment', 'node'];
+  protected static $modules = ['multiversion', 'comment', 'node'];
 
   /**
    * A test node to which comments will be posted.

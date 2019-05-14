@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\Core\Database\Database;
 use Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface;
@@ -11,7 +11,7 @@ use Drupal\multiversion\Entity\Workspace;
  *
  * @group multiversion
  */
-class EntityStorageTest extends MultiversionWebTestBase {
+class EntityStorageTest extends MultiversionFunctionalTestBase {
 
   /**
    * The entity types to test.
@@ -108,7 +108,7 @@ class EntityStorageTest extends MultiversionWebTestBase {
         'filename' => 'drupal.txt',
         'uri' => 'public://drupal.txt',
         'filemime' => 'text/plain',
-        'status' => FILE_STATUS_PERMANENT,
+        'status' => 1,
       ],
       'data_table' => 'file_managed',
       'revision_table' => 'file_revision',
@@ -119,7 +119,7 @@ class EntityStorageTest extends MultiversionWebTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  protected function setUp() {
     parent::setUp();
 
     foreach ($this->entityTypes as $entity_type_id => $info) {

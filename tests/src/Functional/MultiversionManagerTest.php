@@ -1,23 +1,23 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\entity_test\Entity\EntityTestRev;
-use Drupal\simpletest\WebTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Test the MultiversionManager class.
  *
  * @group multiversion
  */
-class MultiversionManagerTest extends WebTestBase {
+class MultiversionManagerTest extends BrowserTestBase {
 
   const REVISION_HASH_REGEX = '[0-9a-f]{32}';
 
   protected $strictConfigSchema = FALSE;
 
-  public static $modules = ['multiversion', 'entity_test'];
+  protected static $modules = ['multiversion', 'entity_test'];
 
   /**
    * @var \Drupal\multiversion\MultiversionManager

@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\multiversion\Tests;
+namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\menu_link_content\MenuLinkContentInterface;
 use Drupal\multiversion\Entity\Workspace;
-use Drupal\simpletest\WebTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests menu links deletion.
  *
  * @group multiversion
  */
-class MenuLinkTest extends WebTestBase {
+class MenuLinkTest extends BrowserTestBase {
 
   protected $strictConfigSchema = FALSE;
 
@@ -36,7 +36,7 @@ class MenuLinkTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'multiversion',
     'menu_link_content',
     'block',
