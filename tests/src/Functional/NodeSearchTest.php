@@ -2,14 +2,21 @@
 
 namespace Drupal\Tests\multiversion\Functional;
 
-use Drupal\Tests\search\Functional\SearchNodeUpdateAndDeletionTest;
+$GLOBALS['skip_test'] = FALSE;
+if (!class_exists('\Drupal\Tests\search\Functional\SearchNodeUpdateAndDeletionTest')) {
+  class_alias('\Drupal\Tests\BrowserTestBase', '\CoreSearchNodeUpdateAndDeletionTest');
+  $GLOBALS['skip_test'] = TRUE;
+}
+else {
+  class_alias('\Drupal\Tests\search\Functional\SearchNodeUpdateAndDeletionTest', '\CoreSearchNodeUpdateAndDeletionTest');
+}
 
 /**
  * Tests the search page text.
  *
  * @group multiversion
  */
-class NodeSearchTest extends SearchNodeUpdateAndDeletionTest {
+class NodeSearchTest extends \CoreSearchNodeUpdateAndDeletionTest {
 
   /**
    * {@inheritdoc}
@@ -20,6 +27,10 @@ class NodeSearchTest extends SearchNodeUpdateAndDeletionTest {
    * Tests that the search index info is updated when a node is deleted.
    */
   public function testSearchIndexUpdateOnNodeDeletion() {
+    if ($GLOBALS['skip_test']) {
+      $this->markTestSkipped();
+    }
+
     // Create a node.
     $node = $this->drupalCreateNode([
       'title' => 'No dragons here',
