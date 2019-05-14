@@ -4,10 +4,6 @@ namespace Drupal\Tests\multiversion\Functional;
 
 use Drupal\Tests\search\Functional\SearchNodeUpdateAndDeletionTest;
 
-if (!class_exists('Drupal\Tests\search\Functional\SearchNodeUpdateAndDeletionTest')) {
-  return;
-}
-
 /**
  * Tests the search page text.
  *
