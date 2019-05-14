@@ -9,7 +9,6 @@ use Drupal\multiversion\Plugin\Field\FieldType\RevisionItem;
  * Test the creation and operation of the Revision field.
  *
  * @group multiversion
- * @group failing
  */
 class RevisionFieldTest extends FieldTestBase {
 

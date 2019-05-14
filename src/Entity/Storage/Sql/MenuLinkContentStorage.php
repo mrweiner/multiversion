@@ -3,17 +3,31 @@
 namespace Drupal\multiversion\Entity\Storage\Sql;
 
 use Drupal\multiversion\Entity\Storage\ContentEntityStorageInterface;
+use Drupal\multiversion\Entity\Storage\ContentEntityStorageTrait;
+
+// Support Drupal 8.7.0 which introduced a dedicated entity storage class for
+// the menu_link_content entity type.
+if (class_exists('\Drupal\menu_link_content\MenuLinkContentStorage')) {
+  class_alias('\Drupal\menu_link_content\MenuLinkContentStorage', '\CoreMenuLinkContentStorage');
+}
+else {
+  class_alias('\Drupal\Core\Entity\Sql\SqlContentEntityStorage', '\CoreMenuLinkContentStorage');
+}
 
 /**
  * Storage handler for menu link content.
  */
-class MenuLinkContentStorage extends ContentEntityStorage implements ContentEntityStorageInterface {
+class MenuLinkContentStorage extends \CoreMenuLinkContentStorage implements ContentEntityStorageInterface {
+
+  use ContentEntityStorageTrait {
+    delete as deleteEntities;
+  }
 
   /**
    * {@inheritdoc}
    */
   public function delete(array $entities) {
-    parent::delete($entities);
+    $this->deleteEntities($entities);
 
     // Remove the deleted entity as parent for all children.
     foreach ($entities as $entity) {
