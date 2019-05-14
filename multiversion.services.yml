@@ -148,3 +148,8 @@ services:
     arguments: ['@module_handler', '@entity_type.manager']
     tags:
       - { name: event_subscriber }
+  multiversion.pathauto_alias_subscriber:
+    class: Drupal\multiversion\EventSubscriber\PathAutoAliasSubscriber
+    arguments: ['@state']
+    tags:
+      - { name: event_subscriber }

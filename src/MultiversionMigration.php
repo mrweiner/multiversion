@@ -244,11 +244,6 @@ class MultiversionMigration implements MultiversionMigrationInterface {
           ],
         ];
       }
-      // We are not deleting old url aliases, that mean we don't need to create
-      // them upon migration process - ignore path aliases field.
-      if ('node' === $entity_type->id()) {
-        unset($map['path']);
-      }
     }
 
     return $map;

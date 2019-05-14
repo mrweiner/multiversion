@@ -66,6 +66,11 @@ class AliasStorage extends CoreAliasStorage {
       throw new \InvalidArgumentException(sprintf('Alias path %s has to start with a slash.', $alias));
     }
 
+    // Skip saving a new alias if migration running.
+    if ($this->state->get('skip_alias_save', FALSE)) {
+      return FALSE;
+    }
+
     // Set workspace equal with the active workspace just for path aliases for
     // multiversionable entities. For all other aliases set workspace 0, they
     // will be available on all workspaces.
