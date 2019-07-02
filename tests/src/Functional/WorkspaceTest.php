@@ -88,4 +88,47 @@ class WorkspaceTest extends MultiversionFunctionalTestBase {
     $this->drupalLogin($user1);
     $this->assertEqual('test1', $this->workspaceManager->getActiveWorkspace()->getMachineName());
   }
+
+  public function testDeleteWorkspaceActiveForUser() {
+    $cats = Workspace::create(['label' => 'Cats', 'machine_name' => 'cats', 'type' => 'basic']);
+    $cats->save();
+    $dogs = Workspace::create(['label' => 'Dogs', 'machine_name' => 'dogs', 'type' => 'basic']);
+    $dogs->save();
+    $dogs_id = $dogs->id();
+    $alina = $this->drupalCreateUser(['administer workspaces']);
+    $john = $this->drupalCreateUser(['administer workspaces']);
+
+    // Login Alina and set the Cats workspace as active.
+    $this->drupalLogin($alina);
+    $this->workspaceManager->setActiveWorkspace($cats);
+    $this->assertEqual('cats', $this->workspaceManager->getActiveWorkspace()->getMachineName());
+
+    // Login John and set the Dogs workspace as active.
+    $this->drupalLogin($john);
+    $this->workspaceManager->setActiveWorkspace($dogs);
+    $this->assertEqual('dogs', $this->workspaceManager->getActiveWorkspace()->getMachineName());
+
+    // Login again Alina, the active workspace for this user should still be the
+    // Cats workspace.
+    $this->drupalLogin($alina);
+    $this->assertEqual('cats', $this->workspaceManager->getActiveWorkspace()->getMachineName());
+
+    // Alina is a cats person and decides to delete the Dogs workspace, without
+    // taking into consideration that Dogs workspace can be active for another
+    // user. This user has all the permissions to do that.
+    $dogs->delete();
+    // As workspaces are fully deleted on cron, run it.
+    \Drupal::service('cron')->run();
+    // After cron run the workspace should be deleted from the database.
+    $this->assertEmpty(Workspace::load($dogs_id));
+
+    // Now login John, this user would expect to see as active the Dogs
+    // workspace, but if anyone else with the permissions to delete that
+    // workspace, deleted it, then John should have as active the default
+    // workspace. As Alina deleted the Dogs workspace, the active workspace
+    // should be the Live workspace.
+    $this->drupalLogin($john);
+    $this->assertEqual('live', $this->workspaceManager->getActiveWorkspace()->getMachineName());
+  }
+
 }

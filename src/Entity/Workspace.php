@@ -2,12 +2,15 @@
 
 namespace Drupal\multiversion\Entity;
 
+use Drupal\Component\Serialization\PhpSerialize;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
+use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Entity\WorkspacePointer;
 
 /**
  * The workspace entity class.
@@ -112,22 +115,15 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   public function delete() {
     if (!$this->isNew()) {
       $workspace_id = $this->id();
-      $entity_type_manager = \Drupal::entityTypeManager();
       // Delete related workspace pointer entities.
-      if ($entity_type_manager->getDefinition('workspace_pointer', FALSE)) {
-        /** @var \Drupal\workspace\WorkspacePointerInterface[] $workspace_pointers */
-        $workspace_pointers = $entity_type_manager->getStorage('workspace_pointer')->loadByProperties(['workspace_pointer' => $workspace_id]);
-        if (!empty($workspace_pointers)) {
-          $workspace_pointer = reset($workspace_pointers);
-          $workspace_pointer->delete();
-        }
-      }
+      $this->cleanupPointer();
 
       /** @var \Drupal\Core\Queue\QueueInterface $queue */
       $queue = \Drupal::queue('deleted_workspace_queue');
       $queue->createQueue();
       /** @var \Drupal\multiversion\MultiversionManagerInterface $multiversion_manager */
       $multiversion_manager = \Drupal::service('multiversion.manager');
+      $entity_type_manager = $this->entityTypeManager();
       /** @var \Drupal\Core\Entity\ContentEntityInterface $entity_type */
       foreach ($multiversion_manager->getEnabledEntityTypes() as $entity_type) {
         // Load IDs for deleted entities.
@@ -164,6 +160,10 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       if ($this->id() === $multiversion_manager->getActiveWorkspaceId()) {
         $multiversion_manager->setActiveWorkspaceId(\Drupal::getContainer()->getParameter('workspace.default'));
       }
+
+      // Deleted workspace won't be active anymore for users that had it as
+      // active, the default workspace will became active for them.
+      $this->deleteWorkspaceActiveSessions($workspace_id);
     }
   }
 
@@ -258,6 +258,78 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    */
   public static function getCurrentUserId() {
     return [\Drupal::currentUser()->id()];
+  }
+
+  /**
+   * Deletes from users private store entries where the workspace is active.
+   *
+   * This will lead to using the default active workspace as the active
+   * workspace for users that had as active the deleted workspace.
+   *
+   * @param $workspace_id
+   */
+  protected function deleteWorkspaceActiveSessions($workspace_id) {
+    // Get all collections for the workspace session negotiator and delete those
+    // that have as active workspace the currently deleted workspace.
+    // Manipulate directly with the database here becase for private tempstore
+    // the access is restricted per current user.
+    $session_negociator_collection = 'user.private_tempstore.workspace.negotiator.session';
+    $values = \Drupal::database()
+      ->select('key_value_expire', 'kve')
+      ->fields('kve', ['name', 'value'])
+      ->condition('collection', $session_negociator_collection)
+      ->execute()
+      ->fetchAll();
+
+    foreach ($values as $value) {
+      if (!empty($value->value) && !empty($value->name)) {
+        $data = PhpSerialize::decode($value->value);
+        if (!empty($data->data) && $data->data == $workspace_id) {
+          \Drupal::database()
+            ->delete('key_value_expire')
+            ->condition('name', $value->name)
+            ->execute();
+        }
+      }
+    }
+  }
+
+  /**
+   * Does pointers cleanup
+   *
+   * Deletes the workspace pointer entities for the deleted workspace and marks
+   * as failed the queued replications that have as source or target the deleted
+   * workspace
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  protected function cleanupPointer() {
+    $entity_type_manager = $this->entityTypeManager();
+    if ($entity_type_manager->getDefinition('workspace_pointer', FALSE)) {
+      $workspace_pointer = WorkspacePointer::loadFromWorkspace($this);
+      if (!empty($workspace_pointer)) {
+        // Also mark as failed all deployments that have as source or target
+        // the deleted workspace.
+        $deployments = $entity_type_manager
+          ->getStorage('replication')
+          ->loadByProperties(['source' => $workspace_pointer->id()]);
+        $deployments += $entity_type_manager
+          ->getStorage('replication')
+          ->loadByProperties(['target' => $workspace_pointer->id()]);
+        /** @var Replication $deployment */
+        foreach ($deployments as $deployment) {
+          $replication_status = $deployment->get('replication_status')->value;
+          if (!in_array($replication_status, [Replication::QUEUED, Replication::REPLICATING])) {
+            continue;
+          }
+          $deployment->set('fail_info', t('This deployment has been automatically marked as failed because source or target workspace has been deleted.'));
+          $deployment->setReplicationStatusFailed()->save();
+        }
+        $workspace_pointer->delete();
+      }
+    }
   }
 
 }
