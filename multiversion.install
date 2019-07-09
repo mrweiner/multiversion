@@ -641,3 +641,10 @@ function multiversion_update_8110() {
     ->setInitialValue(FALSE);
   $definition_update_manager->installFieldStorageDefinition('queued_for_delete', 'workspace', 'multiversion', $queued_for_delete);
 }
+
+/**
+ * Apply the UUID field updates.
+ */
+function multiversion_update_8111() {
+  _multiversion_update_uuid_fields();
+}
