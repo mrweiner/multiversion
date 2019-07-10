@@ -115,8 +115,11 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   public function delete() {
     if (!$this->isNew()) {
       $workspace_id = $this->id();
-      // Delete related workspace pointer entities.
-      $this->cleanupPointer();
+
+      // Execute predelete action on workspace entity, this hook is needed to
+      // be executed before the workspace is deleted on cron and before entity
+      // predelete hooks provided by core.
+      \Drupal::moduleHandler()->invokeAll('multiversion_workspace_predelete', [$this]);
 
       /** @var \Drupal\Core\Queue\QueueInterface $queue */
       $queue = \Drupal::queue('deleted_workspace_queue');
@@ -290,44 +293,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
             ->condition('name', $value->name)
             ->execute();
         }
-      }
-    }
-  }
-
-  /**
-   * Does pointers cleanup
-   *
-   * Deletes the workspace pointer entities for the deleted workspace and marks
-   * as failed the queued replications that have as source or target the deleted
-   * workspace
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  protected function cleanupPointer() {
-    $entity_type_manager = $this->entityTypeManager();
-    if ($entity_type_manager->getDefinition('workspace_pointer', FALSE)) {
-      $workspace_pointer = WorkspacePointer::loadFromWorkspace($this);
-      if (!empty($workspace_pointer)) {
-        // Also mark as failed all deployments that have as source or target
-        // the deleted workspace.
-        $deployments = $entity_type_manager
-          ->getStorage('replication')
-          ->loadByProperties(['source' => $workspace_pointer->id()]);
-        $deployments += $entity_type_manager
-          ->getStorage('replication')
-          ->loadByProperties(['target' => $workspace_pointer->id()]);
-        /** @var Replication $deployment */
-        foreach ($deployments as $deployment) {
-          $replication_status = $deployment->get('replication_status')->value;
-          if (!in_array($replication_status, [Replication::QUEUED, Replication::REPLICATING])) {
-            continue;
-          }
-          $deployment->set('fail_info', t('This deployment has been automatically marked as failed because source or target workspace has been deleted.'));
-          $deployment->setReplicationStatusFailed()->save();
-        }
-        $workspace_pointer->delete();
       }
     }
   }
