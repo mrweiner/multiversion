@@ -5,7 +5,7 @@
   "require": {
     "relaxedws/lca": "dev-master",
     "drupal/key_value": "^1",
-    "drupal/conflict": "^2.0-alpha1"
+    "drupal/conflict": "^2.0-alpha1" 
   },
   "require-dev": {
     "drupal/paragraphs": "^1.1.0"
