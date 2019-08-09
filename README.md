@@ -3,7 +3,7 @@
 Multiversion
 ============
 
-Extends the revision model for content entities.
+Extends the revision model for content entities. Forked to use Conflict 8.x-2.x.
 
 ## Content staging
 
